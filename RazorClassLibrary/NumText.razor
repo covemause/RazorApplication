@@ -1,0 +1,113 @@
+﻿<input type="text" style="text-align:@TextAlign" @bind="numText" />
+
+@code {
+
+    /// <summary>
+    /// 数値タイプ
+    /// </summary>
+    /// <remarks>
+    /// Num：マイナス許容の整数
+    /// UNum：0以上の整数
+    /// Dbl：マイナス許容の浮動小数
+    /// UDbl：0以上の浮動小数
+    /// </remarks>
+    [Parameter]
+    public string NumType { get; set; } = "Num";
+
+    /// <summary>
+    /// 数値桁
+    /// </summary>
+    /// <remarks>
+    /// 数値で99999の場合は、5を設定する
+    /// 浮動小数で9999.999の場合、4.3を設定する
+    /// ※マイナス許容の場合でも桁の追加は不要
+    /// </remarks>
+    [Parameter]
+    public string NumLength {
+        get
+        {
+            return _maxlength;
+        }
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                _maxlength = "";
+            }
+            else
+            {
+                var l = 0;
+                if (NumType.Substring(0,1)=="U" )
+                {
+                    l++;
+                }
+
+
+                if (value.IndexOf(".")>0)
+                {
+                    //「.」がある場合
+                    double dbl;
+                    if(Double.TryParse(value, out dbl))
+                    {
+                        var s = dbl.ToString().Split(".");
+                        if (s.Length != 2) new ArgumentOutOfRangeException("NumLength設定で小数点表現が正しくありません。小数点が1つ以上あります");
+
+                        l += int.Parse(s[0]) + int.Parse(s[1]);
+
+                    }
+                    else
+                    {
+                        new ArgumentOutOfRangeException("NumLength設定で小数点表現が正しくありません。数値と．以外の文字があります");
+                    }
+                }
+                else
+                {
+                    int num;
+                    if (int.TryParse(value, out num))
+                    {
+                        l += num;
+                    }
+                    else
+                    {
+                        new ArgumentOutOfRangeException("NumLength設定で整数表現が正しくありません。数値以外の文字があります");
+                    }
+                }
+
+                _maxlength = l.ToString();
+            }
+        }
+    }
+    private string _maxlength = "";
+
+    /// <summary>
+    /// 数値フォーマット
+    /// </summary>
+    /// <remarks>
+    /// 数値で9,999の場合は、#,##0を設定。0を表示しない場合は、#,###を設定。
+    /// </remarks>
+    [Parameter]
+    public string NumFormat { get; set; } = "";
+
+    /// <summary>
+    /// テキスト揃え
+    /// </summary>
+    /// <remarks>
+    /// text-alignの値。デフォルトはleft
+    /// </remarks>
+    [Parameter]
+    public string TextAlign { get; set; } = "left";
+
+    private string numText
+    {
+        get
+        {
+            return _numText;
+        }
+        set
+        {
+            _numText = value;
+        }
+    }
+    private string _numText;
+
+}
